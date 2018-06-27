@@ -2,8 +2,14 @@
 
 ## usage
 
-node dakoku.js enter user_id password
+### From CLI
+
+npm run cli enter user_id password
 
 or
 
-node dakoku.js leave user_id password
+npm run cli leave user_id password
+
+### Web App (GAE)
+
+npm start
