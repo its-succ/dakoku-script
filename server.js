@@ -9,13 +9,11 @@ const dakoku = require('./dakoku');
 const app = express();
 app.use(bodyParser.json());
 
-app.post('/', jsonParser, (req, res) => {
+app.post('/', jsonParser, async (req, res) => {
   console.log('receive request');
-  dakoku(req.body.action, req.body.user, req.body.password)((err, result) => {
-    console.log('receive response', result);
-    if (err) return console.log(err);
-    res.sendStatus(200);
-  });
+  await dakoku(req.body.action, req.body.user, req.body.password);
+  console.log('complete request');
+  res.sendStatus(200);
 });
 
 const PORT = process.env.PORT || 8088;
