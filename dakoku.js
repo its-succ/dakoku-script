@@ -1,38 +1,34 @@
-// usage: node dakoku.js enter|leave user_id password
+const puppeteer = require('puppeteer');
 
-var Nightmare = require('nightmare');
-var vo = require('vo');
+module.exports = async (action, user, password) => {
+  const btnSelector = action === 'enter' ? '#btnStInput' : '#btnEtInput';
 
-module.exports = function(action, user, password) {
-  var btnSelector = action === 'enter' ? '#btnStInput' : '#btnEtInput';
-
-  return vo(function* () {
-    console.log('execute nightmare');
-    var nightmare = Nightmare({
-      show: false, // if you need to debug, change to true this option.
-      webPreferences: {
-        webSecurity:false
-      },
-      waitTimeout: 10000,
-      executionTimeout: 10000
-    });
-    var iframe_url = yield nightmare
-      .goto('https://teamspirit.cloudforce.com/')
-      .wait('#idcard-identity')
-      .type('#idcard-identity', user)
-      .type('#password', password)
-      .click('#Login')
-      .wait(3000)
-      .wait('iframe')
-      .evaluate(function () {
-        return document.getElementsByTagName('iframe')[1].getAttribute('src');
-      });
-    yield nightmare
-      .goto(iframe_url)
-      .wait(3000)
-      .wait(btnSelector)
-      .click(btnSelector)
-      .wait(3000)
-      .end();
+  const browser = await puppeteer.launch({
+    args: ['--disable-setuid-sandbox', '--no-sandbox']
   });
+  const page = await browser.newPage();
+  await page.goto('https://teamspirit.cloudforce.com/');
+  
+  await page.waitForSelector('#idcard-identity');
+  await page.type('#username', user);
+  await page.type('#password', password);
+  page.click('#Login');
+  
+  await page.waitForNavigation({
+    waitUntil: 'domcontentloaded'
+  });
+  await page.waitForNavigation({
+    waitUntil: 'domcontentloaded'
+  });
+
+  await page.waitForSelector('iframe');
+
+  const frame = await page.frames()[1];
+  await frame.waitFor(3000);
+
+  const button = await frame.$(btnSelector);
+  await button.click();
+  await frame.waitFor(3000);
+
+  browser.close();
 };
